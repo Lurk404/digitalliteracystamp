@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Competency Selector</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { font-size: 18px; font-family: system-ui, sans-serif; max-width: 900px; margin: 1em auto; padding: 0 1em; }
+    label { display: block; margin: 1em 0 0.5em; }
+    select { width: 60%; padding: 0.5em; font-size: 1em; font-family: system-ui, sans-serif; }
+    #resourceLinks { margin-top: 1.5em; }
+    #chartContainer {
+      margin: 0;
+      text-align: center;
+      position: relative;
+      width: 100%;
+
+       }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100%;
+
+    }
+      #main {
+    display: flex;
+    align-items: flex-start;    /* top-align both panels */
+    gap: 2em;                   /* space between them */
+    margin-top: 1.5em;
+  }
+  #main .text-panel {
+    flex: 1;                    /* take up remaining space */
+    max-width: 40%;             /* or whatever ratio you like */
+  }
+  #main .chart-panel {
+    flex: 1;
+    max-width: 60%;
+    text-align: center;         /* center the chart & button */
+  }
+    #exportBtn { padding: 0.5em 1em; font-size: 1em; float: right;}
+  </style>
+</head>
+<body>
+  <h1>Digital Literacy Framework Competency Stamp Generator</h1>
+  <label for="workshopName">Workshop or Resource Name:</label>
+<input type="text" id="workshopName" placeholder="" style="width: 75%; padding: 0.5em; font-size: 1em;" />
+<p>Use the <a href="https://chatgpt.com/g/g-684c67ce67188191a790a3405583f58c-digital-literacy-framework-mapper" target="_blank">Digital Literacy Framework Mapper</a> to align your professional development offerings or learning material to the Digital Literacy Framework.</p>
+<p>Select the <a href="https://digitalliteracy.bccampus.ca/" target="_blank">Digital Literacy Framework competency</a> your <span id="nameInsert1">workshop</span> best aligns with.</p>
+
+
+  <label for="primarySelect">Primary competency:</label>
+  <select id="primarySelect"></select>
+
+  <p>Select additional Framework competencies:</p>
+  <label for="secondarySelect1">Secondary competency:</label>
+  <select id="secondarySelect1"></select>
+  <label for="secondarySelect2">Secondary competency:</label>
+  <select id="secondarySelect2"></select>
+  <label for="secondarySelect3">Secondary competency:</label>
+  <select id="secondarySelect3"></select>
+
+
+  <p style="border: 1px #555 solid; background-color: #184467; padding: .5em; color: #ffffff;">Copy the text and links below, then use the Export PNG button at the bottom of the page to export your stamp. Paste the copied text and links to your own page and insert the downloaded stamp.</p>
+<div id="main">
+  <div class="text-panel">
+<p><span id="nameInsert2">This event</span> aligns with the following <a href="https://digitalliteracy.bccampus.ca/" target="_blank">Digital Literacy Framework competencies</a>:</p>
+
+  <div id="resourceLinks"></div>
+  </div>
+  <div class="chart-panel">
+  <div id="chartContainer">
+    <canvas id="polarChart" width="1000" height="1000"></canvas>
+  </div>
+  <button id="exportBtn">Export PNG</button>
+</div>
+</div>
+  <script>
+    const competencyKeys = [
+      'Ethical and Legal Considerations',
+      'Technology Supports',
+      'Information Literacy',
+      'Digital Scholarship',
+      'Communication and Collaboration',
+      'Creation and Curation',
+      'Digital Wellbeing',
+      'Community-based Learning'
+    ];
+    const competencyDisplay = [
+      'Ethical and Legal\nConsiderations',
+      'Technology\nSupports',
+      'Information\nLiteracy',
+      'Digital\nScholarship',
+      'Communication\nand Collaboration',
+      'Creation\nand Curation',
+      'Digital\nWellbeing',
+      'Community-based\nLearning'
+    ];
+
+    ['primarySelect','secondarySelect1','secondarySelect2','secondarySelect3'].forEach(id => {
+      const sel = document.getElementById(id);
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = '-- Select a competency --';
+      sel.appendChild(placeholder);
+      competencyKeys.forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = key;
+        sel.appendChild(opt);
+      });
+    });
+
+    const linksMap = {};
+    competencyKeys.forEach(key => {
+      const slug = key.toLowerCase().replace(/ /g, '-');
+      linksMap[key] = `https://digitalliteracy.bccampus.ca/competencies/${slug}/`;
+    });
+
+    const colors = [
+      'rgba(79, 181, 231, 1)','rgba(119, 153, 207, 1)','rgba(183, 227, 249, 1)','rgba(246, 243, 172, 1)',
+      'rgba(229, 230, 85, 1)','rgba(165, 207, 82, 1)','rgba(131, 202, 160, 1)','rgba(116, 205, 219, 1)'
+    ];
+    const borderColors = colors.map(c => c.replace('0.6','1'));
+
+    const outerRingPlugin = {
+      id: 'outerRing',
+      afterDraw(chart) {
+        const ctx = chart.ctx;
+        const scale = chart.scales.r;
+        const centerX = scale.xCenter;
+        const centerY = scale.yCenter;
+        const radius = scale.drawingArea;
+        const count = chart.data.labels.length;
+        ctx.save();
+        ctx.beginPath();
+        const rotationOffset = Math.PI / 8;
+        for (let i = 0; i < count; i++) {
+          const angle = scale.getIndexAngle(i) + rotationOffset;
+          const x = centerX + radius * Math.cos(angle);
+          const y = centerY + radius * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#555';
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+const labelsPlugin = {
+  id: 'labels',
+  afterDraw: chart => {
+    const ctx = chart.ctx;
+    const scale = chart.scales.r;
+    const padding = 10;
+    const availableRadius = Math.min(scale.xCenter, scale.yCenter) - padding;
+    const outerRadius = scale.getDistanceFromCenterForValue(2);
+
+    // 1) Compute a "base" offset
+    const defaultOffset = outerRadius + Math.min(availableRadius - outerRadius, 20);
+    const nudges = {
+          0: { dx: 35, dy: 15 },        // Ethical and Legal
+      1:  { dx: 0, dy: 0 },         // Technology Supports
+      2:  { dx: 25, dy: -20 },         // Information Literacy
+      3:  { dx: 0, dy: 0 },         // Digital Scholarship
+      4: { dx: -40, dy: -20 },    // Communication & Collaboration
+      5:  { dx: -10, dy: 0 },    // Creation & Curation
+      6:  { dx: -25, dy: 15 },    // Digital Wellbeing
+      7:  { dx: 0, dy: 0 },     // Community-based Learning
+ 
+    };
+
+    const meta = chart.getDatasetMeta(0);
+    meta.data.forEach((arc, i) => {
+      const rotationOffset = Math.PI / 8;
+      const angle = ((arc.startAngle + arc.endAngle) / 2) + rotationOffset;
+
+     let x = scale.xCenter + Math.cos(angle) * defaultOffset;
+      let y = scale.yCenter + Math.sin(angle) * defaultOffset;
+
+      // 4) Apply any per-label nudge
+      if (nudges[i]) {
+        x += nudges[i].dx;
+        y += nudges[i].dy;
+      }
+
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = "20px system-ui";
+            // ctx.font = getComputedStyle(document.body).font; 
+ 
+
+      // Draw the background box
+      const lines = competencyDisplay[i].split('\n');
+      const lineHeight = 20;
+      const boxPadding = 6;
+      const maxTextWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
+      const boxWidth = maxTextWidth + boxPadding * 2;
+      const boxHeight = lines.length * lineHeight + boxPadding * 2;
+      const boxX = x - boxWidth / 2;
+      const boxY = y - boxHeight / 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(boxX + radius, boxY);
+      ctx.lineTo(boxX + boxWidth - radius, boxY);
+      ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + radius);
+      ctx.lineTo(boxX + boxWidth, boxY + boxHeight - radius);
+      ctx.quadraticCurveTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - radius, boxY + boxHeight);
+      ctx.lineTo(boxX + radius, boxY + boxHeight);
+      ctx.quadraticCurveTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - radius);
+      ctx.lineTo(boxX, boxY + radius);
+      ctx.quadraticCurveTo(boxX, boxY, boxX + radius, boxY);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fill();
+
+      // Draw the text lines
+      ctx.fillStyle = '#000';
+      lines.forEach((line, idx) => {
+        ctx.fillText(
+          line,
+          x,
+          y + idx * lineHeight - ((lines.length - 1) * lineHeight) / 2
+        );
+      });
+
+      ctx.restore();
+    });
+  }
+};
+
+
+
+    const straightSlicePlugin = {
+      id: 'straightSlices',
+      beforeDatasetsDraw(chart) {
+        chart.getDatasetMeta(0).data.forEach(arc => {
+          arc.draw = () => {};
+        });
+      },
+      afterDatasetsDraw(chart) {
+        const { ctx, scales, data } = chart;
+        const centerX = scales.r.xCenter;
+        const centerY = scales.r.yCenter;
+        const values = data.datasets[0].data;
+        const colors = data.datasets[0].backgroundColor;
+        const borders = data.datasets[0].borderColor;
+        const meta = chart.getDatasetMeta(0);
+
+        values.forEach((value, i) => {
+          if (value === 0) return;
+          const rotationOffset = Math.PI / 8;
+          const start = meta.data[i].startAngle + rotationOffset;
+          const end = meta.data[i].endAngle + rotationOffset;
+          const radius = scales.r.getDistanceFromCenterForValue(value);
+          const x1 = centerX + radius * Math.cos(start);
+          const y1 = centerY + radius * Math.sin(start);
+          const x2 = centerX + radius * Math.cos(end);
+          const y2 = centerY + radius * Math.sin(end);
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.closePath();
+          ctx.fillStyle = colors[i];
+          ctx.fill();
+          ctx.strokeStyle = borders[i];
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+    };
+
+    const rotatedGridPlugin = {
+      id: 'rotatedGrid',
+      afterDraw(chart) {
+        const scale = chart.scales.r;
+        const ctx = chart.ctx;
+        const centerX = scale.xCenter;
+        const centerY = scale.yCenter;
+        const rotationOffset = Math.PI / 8;
+        const pointCount = chart.data.labels.length;
+        const innerRadius = scale.getDistanceFromCenterForValue(1);
+
+        ctx.save();
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < pointCount; i++) {
+          const angle = scale.getIndexAngle(i) + rotationOffset;
+          const x = centerX + scale.drawingArea * Math.cos(angle);
+          const y = centerY + scale.drawingArea * Math.sin(angle);
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        for (let i = 0; i < pointCount; i++) {
+          const angle = scale.getIndexAngle(i) + rotationOffset;
+          const x = centerX + innerRadius * Math.cos(angle);
+          const y = centerY + innerRadius * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    Chart.register(outerRingPlugin, labelsPlugin, straightSlicePlugin, rotatedGridPlugin);
+
+    const ctx2 = document.getElementById('polarChart').getContext('2d');
+    const polarChart = new Chart(ctx2, {
+      type: 'polarArea',
+      data: {
+        labels: competencyKeys,
+        datasets: [{
+          data: Array(8).fill(0),
+          backgroundColor: colors,
+          borderColor: borderColors,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        rotation: 0.3927,
+        layout: {
+          padding: { top: 5, bottom: 5, left: 100, right: 100 }
+        },
+        elements: {
+          arc: {
+            backgroundColor: 'transparent',
+            borderWidth: 0
+          }
+        },
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 2,
+            ticks: { display: false, stepSize: 1 },
+            angleLines: { display: false, color: '#AAA', lineWidth: 1 },
+            grid: { display: false }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    function updateAll() {
+      const p = document.getElementById('primarySelect').value;
+      const s1 = document.getElementById('secondarySelect1').value;
+      const s2 = document.getElementById('secondarySelect2').value;
+      const s3 = document.getElementById('secondarySelect3').value;
+
+      const selects = ['primarySelect','secondarySelect1','secondarySelect2','secondarySelect3'];
+      selects.forEach(id => {
+        const sel = document.getElementById(id);
+        Array.from(sel.options).forEach(opt => {
+          if (opt.value === '') {
+            opt.disabled = false;
+            return;
+          }
+          opt.disabled = selects.some(otherId => {
+            return otherId !== id && document.getElementById(otherId).value === opt.value;
+          });
+        });
+      });
+
+      const container = document.getElementById('resourceLinks');
+      container.innerHTML = '';
+      const ul = document.createElement('ul');
+      [p, s1, s2, s3].filter(Boolean).forEach(sel => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = linksMap[sel];
+        a.textContent = sel;
+        a.target = '_blank';
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      container.appendChild(ul);
+
+      const weights = {};
+      competencyKeys.forEach(k => weights[k] = 0);
+      if (p) weights[p] = 2;
+      [s1, s2, s3].forEach(s => {
+        if (s && s !== p) weights[s] += 1;
+      });
+      competencyKeys.forEach(k => { weights[k] = Math.min(weights[k], 2); });
+      polarChart.data.datasets[0].data = competencyKeys.map(k => weights[k]);
+      polarChart.update();
+    }
+
+    ['primarySelect','secondarySelect1','secondarySelect2','secondarySelect3'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updateAll);
+    });
+    document.getElementById('workshopName').addEventListener('input', () => {
+  const name = document.getElementById('workshopName').value.trim();
+  document.getElementById('nameInsert1').textContent = name || 'workshop';
+document.getElementById('nameInsert2').textContent = name || 'This event';
+
+});
+
+    updateAll();
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const canvas = document.getElementById('polarChart');
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'competency_stamp.png';
+      link.click();
+    });
+  </script>
+</body>
+</html>
