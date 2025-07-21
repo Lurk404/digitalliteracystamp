@@ -28,7 +28,7 @@
     display: flex;
     align-items: flex-start;    /* top-align both panels */
     gap: 2em;                   /* space between them */
-    margin-top: 1.5em;
+    margin-top: 1em;
   }
   #main .text-panel {
     flex: 1;                    /* take up remaining space */
@@ -39,15 +39,19 @@
     max-width: 60%;
     text-align: center;         /* center the chart & button */
   }
-    #exportBtn { padding: 0.5em 1em; font-size: 1em; float: right;}
+    #exportBtn { padding: 0.5em 1em; font-size: 1em; text-align: center;}
+    
+
   </style>
 </head>
 <body>
-  <h1>Digital Literacy Framework Competency<br>Stamp Generator</h1>
-  <label for="workshopName">Workshop or Resource Name:</label>
+  
+<h1>Digital Literacy Framework Competency<br>Stamp Generator</h1>
+<p>Use this tool to generate consistent information for your users about how your professional development offerings or learning materials align to the <a href="https://digitalliteracy.bccampus.ca" target="_blank">Digital Literacy Framework competencies</a>.</p>
+<p>If you are unsure of how your content best aligns with the framework, use the <a href="https://chatgpt.com/g/g-684c67ce67188191a790a3405583f58c-digital-literacy-framework-mapper" target="_blank">Digital Literacy Framework Mapper (requires a ChaptGPT account)</a> to get started.<p>
+<label for="workshopName">Name or title of content:</label>
 <input type="text" id="workshopName" placeholder="" style="width: 75%; padding: 0.5em; font-size: 1em;" />
-<p>Use the <a href="https://chatgpt.com/g/g-684c67ce67188191a790a3405583f58c-digital-literacy-framework-mapper" target="_blank">Digital Literacy Framework Mapper</a> (requires a ChatGPT account) to discover how your your professional development offerings or learning material best align to the Digital Literacy Framework.</p>
-<p>Based on that output, use the menus below to select the <a href="https://digitalliteracy.bccampus.ca/" target="_blank">Digital Literacy Framework competency</a> <span id="nameInsert1">your workshop or resource</span> best aligns with.</p>
+<p>Use the dropdown menus below to select the primary and secondary competencies for <span id="nameInsert1">your workshop or resource</span> to generate your competency stamp.</p>
 
 
   <label for="primarySelect">Primary competency:</label>
@@ -61,8 +65,7 @@
   <label for="secondarySelect3">Secondary competency:</label>
   <select id="secondarySelect3"></select>
 
-
-  <p style="border: 1px #555 solid; background-color: #184467; padding: .5em; color: #ffffff;">Copy the text and links below, then use the Export PNG button at the bottom of the page to export your stamp. Paste the copied text and links to your own page and insert the downloaded stamp.</p>
+<hr>
 <div id="main">
   <div class="text-panel">
 <p><span id="nameInsert2">This event</span> aligns with the following <a href="https://digitalliteracy.bccampus.ca/" target="_blank">Digital Literacy Framework competencies</a>:</p>
@@ -73,9 +76,18 @@
   <div id="chartContainer">
     <canvas id="polarChart" width="1000" height="1000"></canvas>
   </div>
-  <button id="exportBtn">Export PNG</button>
+  <button id="exportBtn">Export Stamp</button>
 </div>
 </div>
+<p>To add this information to your own website or advertisement:
+  <ol>  <li>Copy text and links beside the stamp</li>
+
+    <li>Use the <strong>Export Stamp</strong> button to download an image of the stamp</li>
+  
+    <li>Upload the downloaded stamp and right align the image</li>
+        <li>Paste the copied paste and links to your content</li>
+  </ol></p>
+  &nbsp;
   <script>
     const competencyKeys = [
       'Ethical and Legal Considerations',
