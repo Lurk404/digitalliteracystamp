@@ -40,7 +40,12 @@
     text-align: center;         /* center the chart & button */
   }
     #exportBtn { padding: 0.5em 1em; font-size: 1em; text-align: center;}
-    
+   .instructions {
+    border: 1px #555 solid; 
+    background-color: #184467; 
+    padding: .5em; 
+    color: #ffffff;"
+  } 
 
   </style>
 </head>
@@ -63,7 +68,7 @@
   <label for="secondarySelect2">Secondary competency:</label>
   <select id="secondarySelect2"></select>
   <label for="secondarySelect3">Secondary competency:</label>
-  <select id="secondarySelect3"></select>
+  <select style="margin-bottom:1.5em;" id="secondarySelect3"></select>
 
 <hr>
 <div id="main">
@@ -80,6 +85,7 @@
 </div>
 </div>
 <hr>
+<div class="instructions">
 <p>To add this information to your own website or advertisement:
   <ol>  <li>Copy text and links beside the stamp</li>
 
@@ -87,7 +93,7 @@
   
     <li>Upload the downloaded stamp and right align the image</li>
         <li>Paste the copied paste and links to your content</li>
-  </ol></p>
+  </ol></p></div>
   &nbsp;
   <script>
     const competencyKeys = [
